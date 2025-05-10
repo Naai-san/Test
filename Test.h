@@ -1,10 +1,10 @@
 #pragma once
-//2316
+
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/wrappers/GameObject/CarWrapper.h"
 #include "bakkesmod/wrappers/canvaswrapper.h"
-#include "bakkesmod/wrappers/cvarmanagerwrapper.h" // Ajout pour CVarWrapper
-#include "bakkesmod/wrappers/WrapperStructs.h"    // Ajout pour Vector, LinearColor, etc.
+#include "bakkesmod/wrappers/cvarmanagerwrapper.h"
+#include "bakkesmod/wrappers/WrapperStructs.h"
 
 constexpr auto plugin_version = "1.0";
 
@@ -19,9 +19,9 @@ public:
 
 private:
     // Variables de configuration
-    CVarWrapper enableCvar;
-    CVarWrapper indicatorSizeCvar;
-    CVarWrapper opacityCvar;
+    std::shared_ptr<CVarWrapper> enableCvar;
+    std::shared_ptr<CVarWrapper> indicatorSizeCvar;
+    std::shared_ptr<CVarWrapper> opacityCvar;
 
     // Couleurs des indicateurs
     LinearColor pitchUpColor;
@@ -33,7 +33,7 @@ private:
 
     // Méthodes internes
     void Render(CanvasWrapper canvas);
-    void OnPreProcessInput(CarWrapper car, void* params, std::string eventName); // Signature mise à jour
+    void OnPreProcessInput(CarWrapper car, void* params, std::string eventName);
     void InitCVars();
     void InitHooks();
 
