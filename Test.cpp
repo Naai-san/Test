@@ -1,11 +1,13 @@
 #include "pch.h"
 #include "Test.h"
+#include "bakkesmod/wrappers/GameEvent/TutorialWrapper.h" // Ajout pour GetGameEventAsTutorial
 
-// Constructeur par défaut
-Test::Test() {
-    // Ce constructeur peut être vide.
-    // Les membres CVarWrapper et LinearColor seront initialisés par défaut,
-    // puis configurés dans InitCVars lors de l'appel à onLoad.
+// Constructeur
+Test::Test() : enableCvar(0), indicatorSizeCvar(0), opacityCvar(0) {
+    // Les membres CVarWrapper sont initialisés avec 0 (nullptr pour uintptr_t)
+    // pour satisfaire le compilateur s'il ne trouve pas de constructeur par défaut.
+    // Ils seront correctement enregistrés dans InitCVars.
+    // LinearColor a un constructeur par défaut et sera initialisé.
 }
 
 BAKKESMOD_PLUGIN(Test, "Test Plugin", plugin_version, PLUGINTYPE_FREEPLAY)
@@ -25,6 +27,9 @@ void Test::onLoad()
 void Test::onUnload()
 {
     cvarManager->log("Test plugin unloaded.");
+    // Il est bon de unhook les events ici si nécessaire, bien que BakkesMod le fasse souvent automatiquement.
+    // gameWrapper->UnhookEvent("Function TAGame.Car_TA.SetVehicleInput");
+    // gameWrapper->UnregisterDrawables();
 }
 
 void Test::InitCVars()
@@ -47,28 +52,32 @@ void Test::InitHooks()
     // Hook pour capturer les entrées utilisateur
     gameWrapper->HookEventWithCaller<CarWrapper>(
         "Function TAGame.Car_TA.SetVehicleInput",
-        std::bind(&Test::OnPreProcessInput, this)
+        std::bind(&Test::OnPreProcessInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) // Utilisation des placeholders
     );
 
     // Hook pour effectuer le rendu
     gameWrapper->RegisterDrawable(std::bind(&Test::Render, this, std::placeholders::_1));
 }
 
-void Test::OnPreProcessInput()
+// Signature et arguments mis à jour
+void Test::OnPreProcessInput(CarWrapper car, void* params, std::string eventName)
 {
     if (!enableCvar.getBoolValue() || !gameWrapper->IsInGame()) return;
 
-    // Ajoutez ici la logique pour traiter les entrées utilisateur si nécessaire
+    // car: instance de CarWrapper pour laquelle SetVehicleInput a été appelée.
+    // params: pointeur vers la structure FControllerInput (nécessite un cast si utilisé).
+    // eventName: la chaîne "Function TAGame.Car_TA.SetVehicleInput".
+    // Ajoutez ici la logique pour traiter les entrées utilisateur si nécessaire.
 }
 
 void Test::Render(CanvasWrapper canvas)
 {
     if (!enableCvar.getBoolValue() || !gameWrapper->IsInGame()) return;
 
-    auto tutorialGame = gameWrapper->GetGameEventAsTutorial();
+    TutorialWrapper tutorialGame = gameWrapper->GetGameEventAsTutorial(); // Type explicite
     if (tutorialGame.IsNull()) return;
 
-    auto car = tutorialGame.GetGameCar();
+    CarWrapper car = tutorialGame.GetGameCar(); // Type explicite
     if (car.IsNull()) return;
 
     float size = indicatorSizeCvar.getFloatValue();
@@ -82,40 +91,44 @@ void Test::Render(CanvasWrapper canvas)
 
     auto rotation = car.GetRotation();
     auto forward = RotatorToVector(rotation);
-    auto right = Vector(forward.Y, -forward.X, 0).getNormalized();
-    auto up = Vector::cross(forward, right).getNormalized();
+    auto right = Vector(forward.Y, -forward.X, 0).GetNormalized(); // Attention: ceci est un "right" 2D dans le plan XY
+    auto up = Vector::Cross(forward, right).GetNormalized(); // Utilisation de Vector::Cross
 
     // canvas.GetSize() retourne Vector2, dont les composantes X et Y sont des entiers.
     Vector2 center = { canvas.GetSize().X / 2, canvas.GetSize().Y / 2 };
 
     // Exemple d'indicateur pour le pitch
     canvas.SetColor(adjustOpacity(pitchUpColor));
-    // Les casts static_cast<int> ne sont pas nécessaires ici car center.X et center.Y sont déjà des int.
-    canvas.DrawLine(Vector2(center.X, center.Y),
-        Vector2(center.X + 100, center.Y), 3.0f);
+    canvas.DrawLine(Vector2{ center.X, center.Y }, // Initialisateur C++11 pour Vector2
+        Vector2{ center.X + 100, center.Y }, 3.0f);
 }
 
 Vector Test::RotatorToVector(Rotator rotation)
 {
-    float pitch = rotation.Pitch * 3.1415926f / 32768.0f;
-    float yaw = rotation.Yaw * 3.1415926f / 32768.0f;
+    // Conversion des angles de Unreal Rotator (unités entières) en radians
+    float pitchRad = rotation.Pitch * (3.14159265359f / 32768.0f);
+    float yawRad = rotation.Yaw * (3.14159265359f / 32768.0f);
+    // Roll n'est pas utilisé pour un vecteur forward simple
 
-    float CP = cos(pitch);
-    float SP = sin(pitch);
-    float CY = cos(yaw);
-    float SY = sin(yaw);
+    float cp = cos(pitchRad);
+    float sp = sin(pitchRad);
+    float cy = cos(yawRad);
+    float sy = sin(yawRad);
 
-    return Vector(CP * CY, CP * SY, SP);
+    return Vector(cp * cy, cp * sy, sp);
 }
 
 Vector2F Test::WorldToScreen(Vector location, CanvasWrapper canvas)
 {
-    if (!gameWrapper || canvas.IsNull()) // Ajout d'une vérification pour canvas.IsNull() par sécurité
+    // Correction: Utilisation de !canvas.IsValid()
+    if (!gameWrapper || !canvas.IsValid())
     {
-        return { 0.0f, 0.0f }; // Utilisation de littéraux flottants pour Vector2F
+        return { 0.0f, 0.0f };
     }
 
-    Vector projected = canvas.Project(location); // Renvoie Vector2 (int X, int Y)
-    // Conversion explicite de Vector2 vers Vector2F
-    return { static_cast<float>(projected.X), static_cast<float>(projected.Y) };
+    // Correction: canvas.Project retourne Vector2 (int X, int Y)
+    Vector2 projectedInt = canvas.Project(location);
+
+    // Conversion explicite de Vector2 (int) vers Vector2F (float)
+    return { static_cast<float>(projectedInt.X), static_cast<float>(projectedInt.Y) };
 }
