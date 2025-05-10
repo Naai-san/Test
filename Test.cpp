@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Test.h"
+#include "GlobalCVarManager.h"
+
 
 // Constructeur
 Test::Test()
@@ -17,6 +19,7 @@ BAKKESMOD_PLUGIN(Test, "Test Plugin", PLUGIN_VERSION, PLUGINTYPE_FREEPLAY)
 
 void Test::onLoad()
 {
+    _globalCvarManager = cvarManager; // Initialisation de la variable globale
     InitCVars();
     InitHooks();
     cvarManager->log("Test plugin loaded successfully!");
@@ -24,6 +27,7 @@ void Test::onLoad()
 
 void Test::onUnload()
 {
+    _globalCvarManager.reset(); // Nettoyage de la variable globale
     cvarManager->log("Test plugin unloaded.");
 }
 
