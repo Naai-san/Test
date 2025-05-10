@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "PluginSDK.lib")
 
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/wrappers/GameObject/CarWrapper.h"

@@ -68,11 +68,18 @@ void Test::OnPreProcessInput(CarWrapper car, void* params, std::string eventName
 void Test::Render(CanvasWrapper canvas)
 {
     if (!enableCvar->getBoolValue() || !gameWrapper->IsInGame()) return;
+    //cvarManager->log("Render method called");
+    
+    // ------DEBUG -------
+    //test dessin simple
+    cvarManager->log("Render method called");
+    canvas.SetColor(LinearColor(1, 0, 0, 1)); // Rouge opaque
+    canvas.DrawLine(Vector2F(100, 100), Vector2F(200, 200), 5.0f); // Ligne diagonale
 
-    auto tutorial = gameWrapper->GetGameEventAsTutorial();
-    if (tutorial.IsNull()) return;
 
-    CarWrapper car = tutorial.GetGameCar();
+
+    // Obtenir la voiture locale directement
+    CarWrapper car = gameWrapper->GetLocalCar();
     if (car.IsNull()) return;
 
     float size = indicatorSizeCvar->getFloatValue();
@@ -102,6 +109,7 @@ void Test::Render(CanvasWrapper canvas)
     Vector2F screenPitchUp = canvas.ProjectF(pitchUpEnd);
     Vector2F screenPitchDown = canvas.ProjectF(pitchDownEnd);
     Vector2F screenLocation = canvas.ProjectF(location);
+    cvarManager->log("Screen location: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
 
     // Dessiner les axes de yaw (gauche/droite)
     Vector yawLeftEnd = location + right * axisLength;
@@ -117,13 +125,16 @@ void Test::Render(CanvasWrapper canvas)
     Vector2F screenRollLeft = canvas.ProjectF(rollLeftEnd);
     Vector2F screenRollRight = canvas.ProjectF(rollRightEnd);
 
-    // Vérification du canvas
-    if (!enableCvar->getBoolValue() || !gameWrapper->IsInGame()) return;
-
-
-    // Dessiner les lignes avec leurs couleurs respectives
-    canvas.SetColor(adjustOpacity(pitchUpColor));
-    canvas.DrawLine(screenLocation, screenPitchUp, 3.0f);
+    // Dessiner les lignes avec leurs couleurs respectives ++ DEBUG
+    try {
+        canvas.SetColor(adjustOpacity(pitchUpColor));
+        canvas.DrawLine(screenLocation, screenPitchUp, 3.0f);
+        cvarManager->log("Line drawn successfully");
+    }
+    catch (...) {
+        cvarManager->log("Error: Failed to draw line");
+        return;
+    }
 
     canvas.SetColor(adjustOpacity(pitchDownColor));
     canvas.DrawLine(screenLocation, screenPitchDown, 3.0f);
