@@ -138,6 +138,9 @@
   <ItemGroup>
     <ResourceCompile Include="Test.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="bakkesmod.log" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
