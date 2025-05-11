@@ -50,13 +50,42 @@ void Test::InitCVars()
     rollRightColor = { 0, 1, 1, 1 };
 }
 
+/*void Test::InitHooks()
+{
+    cvarManager->log("Initializing hooks...");
+
+    // Hook pour intercepter les entrées du véhicule
+    try {
+        gameWrapper->HookEventWithCaller<CarWrapper>(
+            "Function TAGame.Car_TA.SetVehicleInput",
+            std::bind(&Test::OnPreProcessInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+        );
+        cvarManager->log("HookEventWithCaller for SetVehicleInput registered successfully.");
+    }
+    catch (...) {
+        cvarManager->log("Error: Failed to register HookEventWithCaller for SetVehicleInput.");
+    }
+
+    // Enregistrement de la fonction de rendu
+    try {
+        gameWrapper->RegisterDrawable(std::bind(&Test::Render, this, std::placeholders::_1));
+        cvarManager->log("RegisterDrawable for Render function registered successfully.");
+    }
+    catch (...) {
+        cvarManager->log("Error: Failed to register RegisterDrawable for Render function.");
+    }
+
+    cvarManager->log("Hooks initialized.");
+}*/
 void Test::InitHooks()
 {
+    // Hook pour intercepter les entrées du véhicule
     gameWrapper->HookEventWithCaller<CarWrapper>(
         "Function TAGame.Car_TA.SetVehicleInput",
         std::bind(&Test::OnPreProcessInput, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
     );
 
+    // Enregistrement de la fonction de rendu
     gameWrapper->RegisterDrawable(std::bind(&Test::Render, this, std::placeholders::_1));
 }
 
@@ -65,25 +94,56 @@ void Test::OnPreProcessInput(CarWrapper car, void* params, std::string eventName
     if (!enableCvar->getBoolValue() || !gameWrapper->IsInGame()) return;
 }
 
-void Test::Render(CanvasWrapper canvas)
+/*void Test::Render(CanvasWrapper canvas)
 {
-    if (!enableCvar->getBoolValue() || !gameWrapper->IsInGame()) return;
-    //cvarManager->log("Render method called");
-    
-    // ------DEBUG -------
-    //test dessin simple
-    cvarManager->log("Render method called");
-    canvas.SetColor(LinearColor(1, 0, 0, 1)); // Rouge opaque
-    canvas.DrawLine(Vector2F(100, 100), Vector2F(200, 200), 5.0f); // Ligne diagonale
+    cvarManager->log("Render method called.");
+    if (!gameWrapper->IsInFreeplay() && !gameWrapper->IsInCustomTraining()) {
+        cvarManager->log("Render skipped: Not in Freeplay or Custom Training.");
+        return;
+    }
 
+    // Vérification si le plugin est activé
+    if (!enableCvar->getBoolValue()) {
+        cvarManager->log("Render skipped: Plugin is disabled (test_enabled = 0).");
+        return;
+    }
 
+    // Vérification si le jeu est en cours
+    if (!gameWrapper->IsInGame()) {
+        cvarManager->log("Render skipped: Not in a game.");
+        return;
+    }
 
-    // Obtenir la voiture locale directement
+    // Test de dessin simple
+    try {
+        canvas.SetColor(LinearColor(1, 0, 0, 1)); // Rouge opaque
+        canvas.DrawLine(Vector2F(100, 100), Vector2F(200, 200), 5.0f); // Ligne diagonale
+        cvarManager->log("Debug line drawn successfully.");
+        
+            cvarManager->log("Render method called (simplified test).");
+
+            canvas.SetColor(LinearColor(0, 1, 0, 1)); // Vert opaque
+            canvas.FillBox(Vector2F(100, 100)); // Dessine un carré de 100x100 pixels
+            cvarManager->log("Test rectangle drawn successfully.");
+        
+
+    }
+    catch (...) {
+        cvarManager->log("Error: Failed to draw debug line.");
+        return;
+    }
+
+    // Obtenir la voiture locale
     CarWrapper car = gameWrapper->GetLocalCar();
-    if (car.IsNull()) return;
+    if (car.IsNull()) {
+        cvarManager->log("Render skipped: Local car is null.");
+        return;
+    }
 
+    // Récupération des paramètres de configuration
     float size = indicatorSizeCvar->getFloatValue();
     float opacity = opacityCvar->getFloatValue();
+    cvarManager->log("Indicator size: " + std::to_string(size) + ", Opacity: " + std::to_string(opacity));
 
     auto adjustOpacity = [opacity](LinearColor color) -> LinearColor {
         color.A = opacity;
@@ -93,6 +153,7 @@ void Test::Render(CanvasWrapper canvas)
     // Récupération des vecteurs d'orientation de la voiture
     auto rotation = car.GetRotation();
     auto location = car.GetLocation();
+    cvarManager->log("Car location: X=" + std::to_string(location.X) + ", Y=" + std::to_string(location.Y) + ", Z=" + std::to_string(location.Z));
 
     // Calcul des vecteurs de direction
     Vector forward = RotateVectorWithQuat(Vector(1, 0, 0), RotatorToQuat(rotation));
@@ -102,55 +163,108 @@ void Test::Render(CanvasWrapper canvas)
     // Longueur des axes
     float axisLength = size * 5.0f;
 
-    // Dessiner les axes de pitch (avant/arrière)
+    // Calcul des positions projetées
     Vector pitchUpEnd = location + forward * axisLength;
     Vector pitchDownEnd = location - forward * axisLength;
-
     Vector2F screenPitchUp = canvas.ProjectF(pitchUpEnd);
     Vector2F screenPitchDown = canvas.ProjectF(pitchDownEnd);
     Vector2F screenLocation = canvas.ProjectF(location);
+
     cvarManager->log("Screen location: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
 
-    // Dessiner les axes de yaw (gauche/droite)
-    Vector yawLeftEnd = location + right * axisLength;
-    Vector yawRightEnd = location - right * axisLength;
-
-    Vector2F screenYawLeft = canvas.ProjectF(yawLeftEnd);
-    Vector2F screenYawRight = canvas.ProjectF(yawRightEnd);
-
-    // Dessiner les axes de roll (roulis)
-    Vector rollLeftEnd = location + up * axisLength;
-    Vector rollRightEnd = location - up * axisLength;
-
-    Vector2F screenRollLeft = canvas.ProjectF(rollLeftEnd);
-    Vector2F screenRollRight = canvas.ProjectF(rollRightEnd);
-
-    // Dessiner les lignes avec leurs couleurs respectives ++ DEBUG
+    // Dessiner les axes
     try {
+        // Axe de pitch (avant/arrière)
         canvas.SetColor(adjustOpacity(pitchUpColor));
         canvas.DrawLine(screenLocation, screenPitchUp, 3.0f);
-        cvarManager->log("Line drawn successfully");
+        cvarManager->log("Pitch up line drawn successfully.");
+        if (screenLocation.X < 0 || screenLocation.X > 1920 || screenLocation.Y < 0 || screenLocation.Y > 1080) {
+            cvarManager->log("Screen location is out of bounds: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
+            return;
+        }
+
+        canvas.SetColor(adjustOpacity(pitchDownColor));
+        canvas.DrawLine(screenLocation, screenPitchDown, 3.0f);
+        cvarManager->log("Pitch down line drawn successfully.");
+        if (screenLocation.X < 0 || screenLocation.X > 1920 || screenLocation.Y < 0 || screenLocation.Y > 1080) {
+            cvarManager->log("Screen location is out of bounds: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
+            return;
+        }
+
+        // Axe de yaw (gauche/droite)
+        Vector yawLeftEnd = location + right * axisLength;
+        Vector yawRightEnd = location - right * axisLength;
+        Vector2F screenYawLeft = canvas.ProjectF(yawLeftEnd);
+        Vector2F screenYawRight = canvas.ProjectF(yawRightEnd);
+
+        canvas.SetColor(adjustOpacity(yawLeftColor));
+        canvas.DrawLine(screenLocation, screenYawLeft, 3.0f);
+        cvarManager->log("Yaw left line drawn successfully.");
+        if (screenLocation.X < 0 || screenLocation.X > 1920 || screenLocation.Y < 0 || screenLocation.Y > 1080) {
+            cvarManager->log("Screen location is out of bounds: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
+            return;
+        }
+
+        canvas.SetColor(adjustOpacity(yawRightColor));
+        canvas.DrawLine(screenLocation, screenYawRight, 3.0f);
+        cvarManager->log("Yaw right line drawn successfully.");
+        if (screenLocation.X < 0 || screenLocation.X > 1920 || screenLocation.Y < 0 || screenLocation.Y > 1080) {
+            cvarManager->log("Screen location is out of bounds: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
+            return;
+        }
+
+        // Axe de roll (roulis)
+        Vector rollLeftEnd = location + up * axisLength;
+        Vector rollRightEnd = location - up * axisLength;
+        Vector2F screenRollLeft = canvas.ProjectF(rollLeftEnd);
+        Vector2F screenRollRight = canvas.ProjectF(rollRightEnd);
+
+        canvas.SetColor(adjustOpacity(rollLeftColor));
+        canvas.DrawLine(screenLocation, screenRollLeft, 3.0f);
+        cvarManager->log("Roll left line drawn successfully.");
+        if (screenLocation.X < 0 || screenLocation.X > 1920 || screenLocation.Y < 0 || screenLocation.Y > 1080) {
+            cvarManager->log("Screen location is out of bounds: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
+            return;
+        }
+
+        canvas.SetColor(adjustOpacity(rollRightColor));
+        canvas.DrawLine(screenLocation, screenRollRight, 3.0f);
+        cvarManager->log("Roll right line drawn successfully.");
+        if (screenLocation.X < 0 || screenLocation.X > 1920 || screenLocation.Y < 0 || screenLocation.Y > 1080) {
+            cvarManager->log("Screen location is out of bounds: X=" + std::to_string(screenLocation.X) + ", Y=" + std::to_string(screenLocation.Y));
+            return;
+        }
     }
     catch (...) {
-        cvarManager->log("Error: Failed to draw line");
-        return;
+        cvarManager->log("Error: Failed to draw one or more lines.");
     }
+}*/
 
-    canvas.SetColor(adjustOpacity(pitchDownColor));
-    canvas.DrawLine(screenLocation, screenPitchDown, 3.0f);
+void Test::Render(CanvasWrapper canvas)
+{
+    // Vérifications initiales
+    if (!gameWrapper->IsInFreeplay() && !gameWrapper->IsInCustomTraining()) return;
+    if (!enableCvar->getBoolValue()) return;
+    if (!gameWrapper->IsInGame()) return;
 
-    canvas.SetColor(adjustOpacity(yawLeftColor));
-    canvas.DrawLine(screenLocation, screenYawLeft, 3.0f);
+    // Dessin d'un rectangle simple
+    canvas.SetColor(LinearColor(0, 1, 0, 1)); // Vert opaque
+    canvas.SetPosition(Vector2F(100, 100));   // Position du rectangle
+    canvas.FillBox(Vector2F(100, 100));       // Taille du rectangle (100x100 pixels)
 
-    canvas.SetColor(adjustOpacity(yawRightColor));
-    canvas.DrawLine(screenLocation, screenYawRight, 3.0f);
+    // Dessin d'une ligne diagonale
+    canvas.SetColor(LinearColor(1, 0, 0, 1)); // Rouge opaque
+    canvas.DrawLine(Vector2F(100, 100), Vector2F(200, 200), 5.0f);
 
-    canvas.SetColor(adjustOpacity(rollLeftColor));
-    canvas.DrawLine(screenLocation, screenRollLeft, 3.0f);
-
-    canvas.SetColor(adjustOpacity(rollRightColor));
-    canvas.DrawLine(screenLocation, screenRollRight, 3.0f);
+    // Ajout d'un log périodique
+    static int renderCallCount = 0; // Compteur statique pour suivre les appels
+    renderCallCount++;
+    if (renderCallCount % 1000 == 0) // Log toutes les 100 itérations
+    {
+        cvarManager->log("Render function executed successfully. Drawings are being made.");
+    }
 }
+
 
 Vector Test::RotatorToVector(Rotator rotation)
 {
