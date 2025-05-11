@@ -242,64 +242,64 @@ void Test::OnPreProcessInput(CarWrapper car, void* params, std::string eventName
 
 void Test::Render(CanvasWrapper canvas)
 {
-    // Vérifications initiales (comme avant)
+    // Vérification initiale : Assurez-vous que le contexte de rendu est valide
+    if (&canvas == nullptr) {
+        cvarManager->log("CanvasWrapper is null.");
+        return;
+    }
+    Vector2 screenSize = canvas.GetSize();
+    if (screenSize.X <= 0 || screenSize.Y <= 0) {
+        cvarManager->log("Invalid CanvasWrapper: Screen size is zero or negative.");
+        return;
+    }
+    // 4. Ajoutez un test de dessin minimaliste
+    try {
+        canvas.SetColor(LinearColor(1.0f, 0.0f, 0.0f, 1.0f)); // Rouge opaque
+        canvas.DrawLine(Vector2F(0, 0), Vector2F(100, 100), 5.0f);
+    }
+    catch (...) {
+        cvarManager->log("CanvasWrapper is not valid: Failed to draw.");
+        return;
+    }
+
+    // Vérification des conditions de rendu
     if (!gameWrapper->IsInFreeplay() && !gameWrapper->IsInCustomTraining()) return;
-    if (!enableCvar->getBoolValue()) return; // Assurez-vous que test_enabled est à 1
+    if (!enableCvar->getBoolValue()) return; // Vérifiez que le plugin est activé
     if (!gameWrapper->IsInGame()) return;
 
-    // Essayez d'obtenir la taille de l'écran. Si canvas.GetSize() n'existe pas ou pose problème,
-    // utilisez une résolution courante comme {1920, 1080}.
-    // Vector2F screenSize = canvas.GetSize(); // Décommentez pour essayer
-    Vector2F screenSize = { 1920.0f, 1080.0f }; // Valeur par défaut si GetSize() non dispo
+    // Dessin d'un rectangle rouge semi-transparent couvrant tout l'écran
+    canvas.SetColor(LinearColor(1.0f, 0.0f, 0.0f, 0.5f)); // Rouge semi-transparent
+    canvas.SetPosition(Vector2F(0, 0)); // Position en haut à gauche
+    canvas.FillBox(Vector2F(1920, 1080)); // Taille du rectangle couvrant tout l'écran
 
-    // --- Test 1: Grand rectangle centré et semi-transparent ---
-    // cvarManager->log("Render Test: Tentative de dessin du grand rectangle central."); // Peut devenir très verbeux
-    canvas.SetColor(LinearColor(1.0f, 1.0f, 0.0f, 0.5f)); // Jaune, 50% transparent
-    Vector2F rectSize = { screenSize.X / 2.0f, screenSize.Y / 2.0f };
-    Vector2F rectPos = { (screenSize.X - rectSize.X) / 2.0f, (screenSize.Y - rectSize.Y) / 2.0f };
-    canvas.SetPosition(rectPos);
-    canvas.FillBox(rectSize);
-    // cvarManager->log("Render Test: Appel de dessin du grand rectangle exécuté.");
-
-    // --- Test 2: Affichage de texte ---
-    // cvarManager->log("Render Test: Tentative d'affichage de texte.");
-    canvas.SetColor(LinearColor(1.0f, 1.0f, 1.0f, 1.0f)); // Blanc, opaque
-    // Positionnez le texte. Par exemple, au centre horizontalement, un peu en dessous du centre vertical.
+    // Dessin d'un texte centré
     std::string testText = "TEST AFFICHAGE TEXTE";
-    float textScale = 3.0f; // Augmentez pour un texte plus grand
-
-    // Calculez la position pour centrer le texte si DrawString ne le fait pas.
-    // Cela dépend de si DrawString prend en compte la taille du texte.
-    // Pour un test simple, une position fixe est OK.
-    Vector2F textPos = { (screenSize.X / 2.0f) - ((float)testText.length() * 7.0f * textScale / 2.0f) , screenSize.Y / 2.0f + 50.0f }; // Approximation pour centrer
+    float textScale = 3.0f; // Taille du texte
+    Vector2F textPos = { 960.0f - (testText.length() * 7.0f * textScale / 2.0f), 540.0f }; // Centré
+    canvas.SetColor(LinearColor(1.0f, 1.0f, 1.0f, 1.0f)); // Blanc opaque
     canvas.SetPosition(textPos);
-
-    // La syntaxe exacte de DrawString peut varier. Voici une option courante :
-    // (Texte, ÉchelleX, ÉchelleY) ou (Texte, ÉchelleGlobale)
-    // Vous devrez peut-être ajuster cela en fonction de l'API BakkesMod que vous utilisez.
     canvas.DrawString(testText, textScale, textScale);
-    // cvarManager->log("Render Test: Appel d'affichage de texte exécuté.");
 
-    // --- Test 3: Vos dessins originaux pour comparaison ---
-    // cvarManager->log("Render Test: Tentative de dessin du carré vert original.");
-    canvas.SetColor(LinearColor(0.0f, 1.0f, 0.0f, 1.0f)); // Vert opaque
-    canvas.SetPosition(Vector2F(100.0f, 100.0f));
-    canvas.FillBox(Vector2F(100.0f, 100.0f));
-    // cvarManager->log("Render Test: Appel de dessin du carré vert original exécuté.");
+    // Dessin d'une ligne diagonale verte
+    try
+	{
+		canvas.SetColor(LinearColor(0.0f, 1.0f, 0.0f, 1.0f)); // Vert opaque
+		canvas.DrawLine(Vector2F(100.0f, 100.0f), Vector2F(300.0f, 300.0f), 5.0f);
+	}
+	catch (...)
+	{
+		cvarManager->log("CanvasWrapper is not valid: Failed to draw line.");
+		return;
+	}
 
-    // cvarManager->log("Render Test: Tentative de dessin de la ligne rouge originale.");
-    canvas.SetColor(LinearColor(1.0f, 0.0f, 0.0f, 1.0f)); // Rouge opaque
-    canvas.DrawLine(Vector2F(100.0f, 100.0f), Vector2F(200.0f, 200.0f), 5.0f);
-    // cvarManager->log("Render Test: Appel de dessin de la ligne rouge originale exécuté.");
-
-    // Votre log périodique (peut être commenté si les logs ci-dessus sont trop nombreux)
+    // Log périodique pour éviter de surcharger les logs
     static int renderCallCount = 0;
     renderCallCount++;
-    if (renderCallCount % 1000 == 0)
-    {
-        cvarManager->log("Log Périodique Render: Exécution en cours. Tentatives de dessin effectuées.");
+    if (renderCallCount % 500 == 0) { // Log toutes les 500 itérations
+        cvarManager->log("Render function is being called periodically.");
     }
 }
+
 
 
 Vector Test::RotatorToVector(Rotator rotation)
