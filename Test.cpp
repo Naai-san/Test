@@ -242,26 +242,62 @@ void Test::OnPreProcessInput(CarWrapper car, void* params, std::string eventName
 
 void Test::Render(CanvasWrapper canvas)
 {
-    // Vérifications initiales
+    // Vérifications initiales (comme avant)
     if (!gameWrapper->IsInFreeplay() && !gameWrapper->IsInCustomTraining()) return;
-    if (!enableCvar->getBoolValue()) return;
+    if (!enableCvar->getBoolValue()) return; // Assurez-vous que test_enabled est à 1
     if (!gameWrapper->IsInGame()) return;
 
-    // Dessin d'un rectangle simple
-    canvas.SetColor(LinearColor(0, 1, 0, 1)); // Vert opaque
-    canvas.SetPosition(Vector2F(100, 100));   // Position du rectangle
-    canvas.FillBox(Vector2F(100, 100));       // Taille du rectangle (100x100 pixels)
+    // Essayez d'obtenir la taille de l'écran. Si canvas.GetSize() n'existe pas ou pose problème,
+    // utilisez une résolution courante comme {1920, 1080}.
+    // Vector2F screenSize = canvas.GetSize(); // Décommentez pour essayer
+    Vector2F screenSize = { 1920.0f, 1080.0f }; // Valeur par défaut si GetSize() non dispo
 
-    // Dessin d'une ligne diagonale
-    canvas.SetColor(LinearColor(1, 0, 0, 1)); // Rouge opaque
-    canvas.DrawLine(Vector2F(100, 100), Vector2F(200, 200), 5.0f);
+    // --- Test 1: Grand rectangle centré et semi-transparent ---
+    // cvarManager->log("Render Test: Tentative de dessin du grand rectangle central."); // Peut devenir très verbeux
+    canvas.SetColor(LinearColor(1.0f, 1.0f, 0.0f, 0.5f)); // Jaune, 50% transparent
+    Vector2F rectSize = { screenSize.X / 2.0f, screenSize.Y / 2.0f };
+    Vector2F rectPos = { (screenSize.X - rectSize.X) / 2.0f, (screenSize.Y - rectSize.Y) / 2.0f };
+    canvas.SetPosition(rectPos);
+    canvas.FillBox(rectSize);
+    // cvarManager->log("Render Test: Appel de dessin du grand rectangle exécuté.");
 
-    // Ajout d'un log périodique
-    static int renderCallCount = 0; // Compteur statique pour suivre les appels
+    // --- Test 2: Affichage de texte ---
+    // cvarManager->log("Render Test: Tentative d'affichage de texte.");
+    canvas.SetColor(LinearColor(1.0f, 1.0f, 1.0f, 1.0f)); // Blanc, opaque
+    // Positionnez le texte. Par exemple, au centre horizontalement, un peu en dessous du centre vertical.
+    std::string testText = "TEST AFFICHAGE TEXTE";
+    float textScale = 3.0f; // Augmentez pour un texte plus grand
+
+    // Calculez la position pour centrer le texte si DrawString ne le fait pas.
+    // Cela dépend de si DrawString prend en compte la taille du texte.
+    // Pour un test simple, une position fixe est OK.
+    Vector2F textPos = { (screenSize.X / 2.0f) - ((float)testText.length() * 7.0f * textScale / 2.0f) , screenSize.Y / 2.0f + 50.0f }; // Approximation pour centrer
+    canvas.SetPosition(textPos);
+
+    // La syntaxe exacte de DrawString peut varier. Voici une option courante :
+    // (Texte, ÉchelleX, ÉchelleY) ou (Texte, ÉchelleGlobale)
+    // Vous devrez peut-être ajuster cela en fonction de l'API BakkesMod que vous utilisez.
+    canvas.DrawString(testText, textScale, textScale);
+    // cvarManager->log("Render Test: Appel d'affichage de texte exécuté.");
+
+    // --- Test 3: Vos dessins originaux pour comparaison ---
+    // cvarManager->log("Render Test: Tentative de dessin du carré vert original.");
+    canvas.SetColor(LinearColor(0.0f, 1.0f, 0.0f, 1.0f)); // Vert opaque
+    canvas.SetPosition(Vector2F(100.0f, 100.0f));
+    canvas.FillBox(Vector2F(100.0f, 100.0f));
+    // cvarManager->log("Render Test: Appel de dessin du carré vert original exécuté.");
+
+    // cvarManager->log("Render Test: Tentative de dessin de la ligne rouge originale.");
+    canvas.SetColor(LinearColor(1.0f, 0.0f, 0.0f, 1.0f)); // Rouge opaque
+    canvas.DrawLine(Vector2F(100.0f, 100.0f), Vector2F(200.0f, 200.0f), 5.0f);
+    // cvarManager->log("Render Test: Appel de dessin de la ligne rouge originale exécuté.");
+
+    // Votre log périodique (peut être commenté si les logs ci-dessus sont trop nombreux)
+    static int renderCallCount = 0;
     renderCallCount++;
-    if (renderCallCount % 1000 == 0) // Log toutes les 100 itérations
+    if (renderCallCount % 1000 == 0)
     {
-        cvarManager->log("Render function executed successfully. Drawings are being made.");
+        cvarManager->log("Log Périodique Render: Exécution en cours. Tentatives de dessin effectuées.");
     }
 }
 

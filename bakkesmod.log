@@ -1217,7 +1217,6 @@
 [02:04:46] [bakkesmod] > togglemenu console2;
 [02:04:46] [bakkesmod] Opened window console2
 [02:04:50] [bakkesmod] [class Test] Render function executed successfully. Drawings are being made.
-//OK !!
 [02:04:57] [bakkesmod] [class Test] Render function executed successfully. Drawings are being made.
 [02:04:58] [bakkesmod] Closing window console2
 [02:05:00] [RankShowMod] Skill request completed
@@ -1226,3 +1225,80 @@
 [02:05:00] [bakkesmod] Window queuemenu is already closed.
 [02:05:00] [RankShowMod] New game event set
 [02:05:00] [RankShowMod] New game event set
+[02:43:39] [bakkesmod] [class Test] Test plugin unloaded.
+[02:43:39] [bakkesmod] Unloading test.
+[02:43:39] [bakkesmod] Checking to see if plugin still has timeouts.
+[02:43:39] [bakkesmod] Removed 0 timeouts.
+[02:43:39] [bakkesmod] Removed cvar test_enabled
+[02:43:39] [bakkesmod] Removed cvar test_opacity
+[02:43:39] [bakkesmod] Removed cvar test_size
+[02:43:39] [bakkesmod] Removed engine hooks
+[02:43:39] [bakkesmod] Removed drawables
+[02:43:39] [bakkesmod] Plugin  unloaded succesfully!
+[02:43:39] [bakkesmod] Trying LoadLibraryW
+[02:43:39] [bakkesmod] On file: C:\Users\Naaiers\AppData\Roaming\bakkesmod\bakkesmod\plugins/test.dll. 
+[02:43:39] [bakkesmod] Called LoadLibraryW 
+[02:43:39] [bakkesmod] Plugin Info: 
+[02:43:39] [bakkesmod] API Version: 95
+[02:43:39] [bakkesmod] File Name: C:\Users\Naaiers\source\repos\Test\Test.cpp
+[02:43:39] [bakkesmod] Class Name: Test
+[02:43:39] [bakkesmod] Plugin Name: Test Plugin
+[02:43:39] [bakkesmod] Game events: 1
+[02:43:39] [bakkesmod] Plugin Version: 1.0
+[02:43:39] [bakkesmod] [class Test] Test plugin loaded successfully!
+[02:43:39] [bakkesmod] Plugin test loaded successfully.
+[02:43:39] [bakkesmod] Adding new plugin settings model (Airdribble plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Auto replay uploader)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Ball prediction plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Defender plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Dollycam plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Ingame Rank)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Kickoff plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Mechanical plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (MMR Tracker)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Plugin manager (beta))
+[02:43:39] [bakkesmod] Adding new plugin settings model (Predictdator V2.3)
+[02:43:39] [bakkesmod] Adding new plugin settings model (RCON plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Rebound plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Recovery plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Redirect plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Rumble freeplay)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Special commands)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Wallhit plugin)
+[02:43:39] [bakkesmod] Adding new plugin settings model (AirOrientationTrainer)
+[02:43:39] [bakkesmod] Adding new plugin settings model (Lobby Ranks)
+[02:43:39] [bakkesmod] Adding new plugin settings model (SpeedFlipTrainer)
+[02:44:09] [bakkesmod] > closemenu queuemenu
+[02:44:09] [bakkesmod] Window queuemenu is already closed.
+[02:44:11] [bakkesmod] Adding Message from the Wizard:Additional replay data provided by BakkesMod. You can support our work at: https://www.patreon.com/bakkesmod to the replay log
+[02:44:11] [bakkesmod] Adding GameStartTime:2025-05-11T02:44:11+0200 to the replay log
+[02:44:11] [bakkesmod] Got MMR request for mu=61.4295, sigma=2.5, played=209 calculated result: 1328.59
+[02:44:11] [bakkesmod] Adding MMR:Steam|76561197997695973|0:PRE:1328.59|0|0 to the replay log
+[02:44:11] [RankShowMod] New game event set
+[02:44:11] [RankShowMod] New game event set
+[02:44:11] [RankShowMod] Match ended 670438912
+[02:44:11] [RankShowMod] Match ended2 -1
+[02:44:11] [RankShowMod] New game event set
+[02:44:11] [RankShowMod] Player can now leave
+[02:44:11] [AuthorativeSoccarMod] User is in freeplay
+[02:44:11] [FreeplayMod] ClearColor timeout
+[02:44:11] [FreeplayMod] Cars 1
+[02:44:11] [FreeplayMod] Clearing car color overrides for car 0
+[02:44:12] [FreeplayMod] ClearColor timeout
+[02:44:12] [FreeplayMod] Cars 1
+[02:44:12] [FreeplayMod] Clearing car color overrides for car 0
+[02:44:14] [bakkesmod] > togglemenu console2;
+[02:44:14] [bakkesmod] Opened window console2
+[02:44:18] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:44:25] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:44:32] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:44:39] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:44:46] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:44:53] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:00] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:07] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:14] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:21] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:28] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:35] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
+[02:45:42] [bakkesmod] [class Test] Log P riodique Render: Ex cution en cours. Tentatives de dessin effectu es.
